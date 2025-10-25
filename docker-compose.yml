@@ -1,0 +1,16 @@
+version: "3.8"
+services:
+  app:
+    build: .
+    image: ocr-reconciler:latest
+    ports:
+      - "3000:3000"
+    environment:
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
+      MP_ACCESS_TOKEN: ${MP_ACCESS_TOKEN}
+      NEXT_PUBLIC_APP_NAME: ${NEXT_PUBLIC_APP_NAME:-OCR Reconciler}
+      MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-10}
+    volumes:
+      - ./docker-data:/data
+    restart: unless-stopped
