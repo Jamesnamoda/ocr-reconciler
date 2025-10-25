@@ -2,12 +2,14 @@
 import { useState } from "react";
 import Results from "./Results";
 import type { UploadResponse } from "@/types";
+import { checkEnvStatus } from "@/lib/config";
 
 export default function UploadForm() {
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [resp, setResp] = useState<UploadResponse | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  const envStatus = checkEnvStatus();
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -47,10 +49,10 @@ export default function UploadForm() {
           />
         </div>
         <button 
-          disabled={!file || loading} 
+          disabled={!file || loading || !envStatus.isValid} 
           className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
         >
-          {loading ? "Procesando..." : "Subir y conciliar"}
+          {loading ? "Procesando..." : !envStatus.isValid ? "Configurar APIs primero" : "Subir y conciliar"}
         </button>
       </form>
 

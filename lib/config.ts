@@ -16,12 +16,24 @@ export const env = EnvSchema.parse({
   MAX_UPLOAD_MB: process.env.MAX_UPLOAD_MB,
 });
 
-// Validate required env vars at runtime
+// Check if required env vars are available
+export function checkEnvStatus() {
+  const missing = [];
+  if (!env.OPENAI_API_KEY) missing.push("OPENAI_API_KEY");
+  if (!env.MP_ACCESS_TOKEN) missing.push("MP_ACCESS_TOKEN");
+  
+  return {
+    isValid: missing.length === 0,
+    missing,
+    hasOpenAI: !!env.OPENAI_API_KEY,
+    hasMercadoPago: !!env.MP_ACCESS_TOKEN,
+  };
+}
+
+// Validate required env vars at runtime (for API calls)
 export function validateEnv() {
-  if (!env.OPENAI_API_KEY) {
-    throw new Error("OPENAI_API_KEY is required");
-  }
-  if (!env.MP_ACCESS_TOKEN) {
-    throw new Error("MP_ACCESS_TOKEN is required");
+  const status = checkEnvStatus();
+  if (!status.isValid) {
+    throw new Error(`Missing required environment variables: ${status.missing.join(", ")}`);
   }
 }
