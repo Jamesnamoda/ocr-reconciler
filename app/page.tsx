@@ -52,17 +52,25 @@ export default function Page() {
                       Configuración incompleta
                     </h3>
                     <div className="mt-2 text-sm text-yellow-700">
-                      <p>Faltan las siguientes variables de entorno:</p>
-                      <ul className="list-disc list-inside mt-1">
+                      <p className="mb-2">Faltan las siguientes variables de entorno:</p>
+                      <ul className="list-disc list-inside mb-3">
                         {envStatus.missing.map((missing) => (
                           <li key={missing}>{missing}</li>
                         ))}
                       </ul>
-                      <p className="mt-2">
-                        <Link href="/config" className="font-medium text-yellow-800 hover:text-yellow-900 underline">
-                          Configurar APIs →
-                        </Link>
-                      </p>
+                      
+                      <div className="bg-blue-50 border border-blue-200 rounded p-3 mb-3">
+                        <p className="font-medium text-blue-800 mb-1">Configurar en Vercel:</p>
+                        <p className="text-blue-700">
+                          1. Ve a Vercel Dashboard → Tu Proyecto → Settings → Environment Variables<br/>
+                          2. Agrega <code className="bg-blue-100 px-1 rounded">OPENAI_API_KEY</code> y <code className="bg-blue-100 px-1 rounded">MP_ACCESS_TOKEN</code><br/>
+                          3. Haz Redeploy
+                        </p>
+                      </div>
+
+                      <Link href="/config" className="font-medium text-yellow-800 hover:text-yellow-900 underline">
+                        Ver página de configuración →
+                      </Link>
                     </div>
                   </div>
                 </div>
