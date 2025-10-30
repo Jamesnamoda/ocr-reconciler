@@ -12,11 +12,19 @@ export default function ConfigPage() {
 
   // Cargar claves guardadas al inicio
   useEffect(() => {
-    const savedOpenAI = localStorage.getItem("openai_key");
-    const savedMP = localStorage.getItem("mp_token");
-    if (savedOpenAI) setOpenaiKey(savedOpenAI);
-    if (savedMP) setMpToken(savedMP);
+    loadSavedKeys();
   }, []);
+
+  const loadSavedKeys = async () => {
+    try {
+      const response = await fetch("/api/config");
+      const data = await response.json();
+      if (data.openai_key) setOpenaiKey(data.openai_key);
+      if (data.mp_token) setMpToken(data.mp_token);
+    } catch (err) {
+      console.error("Error loading config:", err);
+    }
+  };
 
   const handleSave = async () => {
     if (!openaiKey.trim() && !mpToken.trim()) {
@@ -26,20 +34,28 @@ export default function ConfigPage() {
 
     setIsSaving(true);
     try {
-      // Guardar en localStorage
-      if (openaiKey.trim()) {
-        localStorage.setItem("openai_key", openaiKey.trim());
-      }
-      if (mpToken.trim()) {
-        localStorage.setItem("mp_token", mpToken.trim());
-      }
+      // Guardar en el servidor
+      const response = await fetch("/api/config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          openai_key: openaiKey.trim(),
+          mp_token: mpToken.trim(),
+        }),
+      });
 
-      setMessage("✅ Claves guardadas correctamente. Las claves están guardadas localmente en el navegador.");
-      
-      // Limpiar mensaje después de 3 segundos
-      setTimeout(() => {
-        setMessage("");
-      }, 3000);
+      const data = await response.json();
+
+      if (response.ok) {
+        setMessage("✅ Claves guardadas correctamente en .env.local");
+        
+        // Limpiar mensaje después de 3 segundos
+        setTimeout(() => {
+          setMessage("");
+        }, 3000);
+      } else {
+        setMessage("❌ Error: " + data.error);
+      }
     } catch (err: any) {
       setMessage("❌ Error al guardar: " + err.message);
     } finally {
@@ -126,12 +142,11 @@ export default function ConfigPage() {
           <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-md">
             <h3 className="text-sm font-medium text-blue-800 mb-2">ℹ️ Nota Importante:</h3>
             <p className="text-sm text-blue-700 mb-2">
-              Las claves se guardan localmente en tu navegador. Para mayor seguridad en producción, 
-              configúralas como variables de entorno en Vercel.
+              Las claves se guardan en el archivo <code className="bg-gray-100 px-1 py-0.5 rounded">.env.local</code> del servidor.
             </p>
             <p className="text-sm text-blue-700">
-              <strong>Importante:</strong> Las variables de entorno del servidor (`.env.local`) 
-              tienen prioridad sobre las claves guardadas aquí.
+              Después de guardar, <strong>reinicia el servidor de desarrollo</strong> (Ctrl+C y vuelve a ejecutar <code className="bg-gray-100 px-1 py-0.5 rounded">npm run dev</code>) 
+              para que los cambios surtan efecto.
             </p>
           </div>
         </div>
