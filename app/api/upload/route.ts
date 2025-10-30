@@ -45,12 +45,13 @@ export async function POST(req: NextRequest) {
     const beginISO = begin.toISOString();
     const endISO = end.toISOString();
 
-    // 4) MP search
+    // 4) MP search - filtrar solo transferencias de dinero
     const results = await searchPayments({
       begin_date: beginISO,
       end_date: endISO,
       amount: parsed.amount ?? undefined,
       limit: 50,
+      operation_type: "money_transfer", // Filtrar solo transferencias
     });
 
     // 5) Score

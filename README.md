@@ -7,6 +7,7 @@ Una aplicación full-stack construida con Next.js que permite subir imágenes de
 - **OCR**: Extracción de texto de imágenes usando Tesseract.js
 - **IA**: Parseo estructurado de datos con OpenAI GPT
 - **Integración**: Búsqueda automática en Mercado Pago API
+- **Validación de Depósitos**: Filtra y valida solo transferencias de dinero contra tickets
 - **Scoring**: Algoritmo de coincidencias con puntuación inteligente
 - **Docker**: Containerización completa para deployment
 
@@ -29,11 +30,19 @@ Copia `.env.example` a `.env.local` y completa las variables:
 cp .env.example .env.local
 ```
 
-Edita `.env.local` con tus claves reales:
+Edita `.env.local` con tus claves reales.
+
+**Obtener MP_ACCESS_TOKEN:**
+1. Ve a https://www.mercadopago.com.ar/developers
+2. Inicia sesión con tu cuenta de Mercado Pago
+3. Ve a "Tus integraciones" > Crea/selecciona una aplicación
+4. Ve a "Credenciales" y copia el Access Token:
+   - **Pruebas**: `TEST-xxxx...` (Sandbox)
+   - **Producción**: `APP_USR-xxxx...` (Real)
 
 ```env
 OPENAI_API_KEY=tu_clave_openai_aqui
-MP_ACCESS_TOKEN=tu_token_mercadopago_aqui
+MP_ACCESS_TOKEN=APP_USR-tu_token_aqui
 ```
 
 ### 2. Instalación de Dependencias
@@ -54,8 +63,10 @@ La aplicación estará disponible en `http://localhost:3000`
 
 1. **Subir Imagen**: Selecciona una imagen de transferencia/comprobante
 2. **Procesamiento**: La app ejecuta OCR y parseo con GPT automáticamente
-3. **Búsqueda**: Se buscan coincidencias en Mercado Pago dentro de ±3 días
+3. **Validación**: Se buscan coincidencias en Mercado Pago filtrando solo transferencias de dinero (`money_transfer`) dentro de ±3 días
 4. **Resultados**: Se muestran las coincidencias ordenadas por score
+
+**Nota**: La app valida depósitos de la cuenta de Mercado Pago asociada al `MP_ACCESS_TOKEN` configurado.
 
 ## Deployment con Docker
 
@@ -161,6 +172,7 @@ El sistema calcula coincidencias basándose en:
 - **Idiomas OCR**: Español + Inglés
 - **Ventana de búsqueda**: ±3 días desde la fecha detectada
 - **Límite MP**: 50 resultados por búsqueda
+- **Tipo de operación**: Solo se validan transferencias de dinero (`money_transfer`), excluyendo otros tipos de pagos
 
 ## Seguridad
 
@@ -189,8 +201,10 @@ El sistema calcula coincidencias basándose en:
 - Confirma que tienes créditos disponibles
 
 ### Error de Mercado Pago
-- Verifica tu access token
+- Verifica tu access token en `.env.local`
 - Confirma que estás usando el ambiente correcto (sandbox/prod)
+- Asegúrate de que el token tenga permisos de lectura (`read`)
+- Si usas Sandbox (TEST-), verifica que tengas transacciones de prueba para testear
 
 ## Contribución
 

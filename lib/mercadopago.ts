@@ -6,6 +6,7 @@ export async function searchPayments(params: {
   end_date: string;   // ISO
   amount?: number;
   limit?: number;
+  operation_type?: string;
 }) {
   const qs = new URLSearchParams({
     range: "date_created",
@@ -13,6 +14,11 @@ export async function searchPayments(params: {
     end_date: params.end_date,
     limit: String(params.limit ?? 30),
   });
+
+  // Filtrar por tipo de operación si se especifica
+  if (params.operation_type) {
+    qs.append("operation_type", params.operation_type);
+  }
 
   // Nota: filtrar por monto exacto lo hacemos luego en app (o arma otros filtros si aplica)
   const res = await fetch(
