@@ -1,23 +1,65 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function ConfigPage() {
+  const router = useRouter();
   const [openaiKey, setOpenaiKey] = useState("");
   const [mpToken, setMpToken] = useState("");
   const [message, setMessage] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
 
-  const handleSave = () => {
-    // En una implementación real, esto se enviaría al servidor
-    // Por ahora, solo mostramos un mensaje
-    setMessage("Las claves se han guardado. Reinicia la aplicación para aplicar los cambios.");
+  // Cargar claves guardadas al inicio
+  useEffect(() => {
+    const savedOpenAI = localStorage.getItem("openai_key");
+    const savedMP = localStorage.getItem("mp_token");
+    if (savedOpenAI) setOpenaiKey(savedOpenAI);
+    if (savedMP) setMpToken(savedMP);
+  }, []);
+
+  const handleSave = async () => {
+    if (!openaiKey.trim() && !mpToken.trim()) {
+      setMessage("Por favor, ingresa al menos una clave.");
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      // Guardar en localStorage
+      if (openaiKey.trim()) {
+        localStorage.setItem("openai_key", openaiKey.trim());
+      }
+      if (mpToken.trim()) {
+        localStorage.setItem("mp_token", mpToken.trim());
+      }
+
+      setMessage("✅ Claves guardadas correctamente. Las claves están guardadas localmente en el navegador.");
+      
+      // Limpiar mensaje después de 3 segundos
+      setTimeout(() => {
+        setMessage("");
+      }, 3000);
+    } catch (err: any) {
+      setMessage("❌ Error al guardar: " + err.message);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-2xl mx-auto px-4">
         <div className="bg-white rounded-lg shadow-md p-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-6">Configuración de API</h1>
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-2xl font-bold text-gray-900">Configuración de API</h1>
+            <button
+              onClick={() => router.push("/")}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500"
+            >
+              ← Volver
+            </button>
+          </div>
           
           <div className="space-y-6">
             <div>
@@ -52,25 +94,44 @@ export default function ConfigPage() {
               </p>
             </div>
 
-            <button
-              onClick={handleSave}
-              className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              Guardar Configuración
-            </button>
+            <div className="flex gap-3">
+              <button
+                onClick={() => router.push("/")}
+                className="flex-1 bg-gray-200 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleSave}
+                disabled={isSaving}
+                className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSaving ? "Guardando..." : "Guardar Configuración"}
+              </button>
+            </div>
 
             {message && (
-              <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
+              <div className={`px-4 py-3 rounded ${
+                message.includes("✅") 
+                  ? "bg-green-100 border border-green-400 text-green-700" 
+                  : message.includes("❌")
+                  ? "bg-red-100 border border-red-400 text-red-700"
+                  : "bg-yellow-100 border border-yellow-400 text-yellow-700"
+              }`}>
                 {message}
               </div>
             )}
           </div>
 
-          <div className="mt-8 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
-            <h3 className="text-sm font-medium text-yellow-800 mb-2">Nota Importante:</h3>
-            <p className="text-sm text-yellow-700">
-              En producción, estas claves deben configurarse como variables de entorno en Vercel 
-              para mayor seguridad. Esta interfaz es solo para desarrollo y pruebas.
+          <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-md">
+            <h3 className="text-sm font-medium text-blue-800 mb-2">ℹ️ Nota Importante:</h3>
+            <p className="text-sm text-blue-700 mb-2">
+              Las claves se guardan localmente en tu navegador. Para mayor seguridad en producción, 
+              configúralas como variables de entorno en Vercel.
+            </p>
+            <p className="text-sm text-blue-700">
+              <strong>Importante:</strong> Las variables de entorno del servidor (`.env.local`) 
+              tienen prioridad sobre las claves guardadas aquí.
             </p>
           </div>
         </div>
